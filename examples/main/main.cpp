@@ -743,6 +743,8 @@ int main(int argc, char ** argv) {
 
 #ifndef IOCTL_OUTPUT
                 printf("%s", token_str.c_str());
+#else
+                outputBuffer.append(token_str);
 #endif
 
                 if (embd.size() > 1) {
@@ -751,8 +753,6 @@ int main(int argc, char ** argv) {
                     output_tokens.push_back(id);
 #ifndef IOCTL_OUTPUT
                     output_ss << token_str;
-#else
-                    outputBuffer.append(token_str);
 #endif
                 }
             }
