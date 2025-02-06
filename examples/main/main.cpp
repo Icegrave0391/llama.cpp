@@ -114,7 +114,7 @@ static void sigint_handler(int signo) {
 static void llama_log_callback_logTee(ggml_log_level level, const char * text, void * user_data) {
     (void) level;
     (void) user_data;
-    LOG_TEE("%s", text);
+    LOG_TEE("%s hhh", text);
 }
 
 int main(int argc, char ** argv) {
