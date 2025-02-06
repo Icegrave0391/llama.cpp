@@ -730,11 +730,12 @@ int main(int argc, char ** argv) {
             }
         }
 
+#if 0
         // display text
         if (input_echo && display) {
             for (auto id : embd) {
                 const std::string token_str = llama_token_to_piece(ctx, id);
-                printf("%s xyz", token_str.c_str());
+                printf("%s", token_str.c_str());
 
                 if (embd.size() > 1) {
                     input_tokens.push_back(id);
@@ -745,6 +746,32 @@ int main(int argc, char ** argv) {
             }
             fflush(stdout);
         }
+
+#else
+        // display based on buffer
+        std::string outputBuffer;
+
+        printf("Prep to display text\n");
+
+        for (auto id : embd) {
+            const std::string token_str = llama_token_to_piece(ctx, id);
+            
+            if (embd.size() > 1) {
+                input_tokens.push_back(id);
+            } else {
+                output_tokens.push_back(id);
+                outputBuffer.append(token_str);
+            }
+        }
+
+        printf("%s", outputBuffer.c_str());
+        fflush(stdout);
+
+        char *bufferPtr = const_cast<char*>(outputBuffer.c_str());
+        printf("bufferPtr: %s\n", bufferPtr);
+        fflush(stdout);
+#endif
+
         // reset color to default if there is no pending user input
         if (input_echo && (int) embd_inp.size() == n_consumed) {
             console::set_display(console::reset);
