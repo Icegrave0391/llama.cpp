@@ -951,7 +951,8 @@ int main(int argc, char ** argv) {
 
     // print
 #ifdef IOCTL_OUTPUT
-    printf("%s", outputBuffer.c_str());
+    printf("%s\n", outputBuffer.c_str());
+    fflush(stdout);
 #endif
 
 
