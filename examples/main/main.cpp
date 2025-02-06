@@ -31,6 +31,8 @@
 #pragma warning(disable: 4244 4267) // possible loss of data
 #endif
 
+#define IOCTL_OUTPUT
+
 static llama_context           ** g_ctx;
 static llama_model             ** g_model;
 static gpt_params               * g_params;
@@ -521,6 +523,10 @@ int main(int argc, char ** argv) {
 
     struct llama_sampling_context * ctx_sampling = llama_sampling_init(sparams);
 
+#ifdef IOCTL_OUTPUT
+    std::string outputBuffer;
+#endif 
+    
     while ((n_remain != 0 && !is_antiprompt) || params.interactive) {
         // predict
         if (!embd.empty()) {
@@ -730,49 +736,30 @@ int main(int argc, char ** argv) {
             }
         }
 
-#if 0
         // display text
         if (input_echo && display) {
             for (auto id : embd) {
                 const std::string token_str = llama_token_to_piece(ctx, id);
+
+#ifndef IOCTL_OUTPUT
                 printf("%s", token_str.c_str());
-
-                if (embd.size() > 1) {
-                    input_tokens.push_back(id);
-                } else {
-                    output_tokens.push_back(id);
-                    output_ss << token_str;
-                }
-            }
-            fflush(stdout);
-        }
-
-#else
-        // display based on buffer
-        if (input_echo && display) {
-            std::string outputBuffer;
-
-            printf("Prep to display text\n");
-
-            for (auto id : embd) {
-                const std::string token_str = llama_token_to_piece(ctx, id);
-                
-                if (embd.size() > 1) {
-                    input_tokens.push_back(id);
-                } else {
-                    output_tokens.push_back(id);
-                    outputBuffer.append(token_str);
-                }
-            }
-
-            printf("%s", outputBuffer.c_str());
-            fflush(stdout);
-
-            char *bufferPtr = const_cast<char*>(outputBuffer.c_str());
-            printf("bufferPtr: %s\n", bufferPtr);
-            fflush(stdout);
-        }
 #endif
+
+                if (embd.size() > 1) {
+                    input_tokens.push_back(id);
+                } else {
+                    output_tokens.push_back(id);
+#ifndef IOCTL_OUTPUT
+                    output_ss << token_str;
+#else
+                    outputBuffer.append(token_str);
+#endif
+                }
+            }
+#ifndef IOCTL_OUTPUT
+            fflush(stdout);
+#endif
+        }
 
         // reset color to default if there is no pending user input
         if (input_echo && (int) embd_inp.size() == n_consumed) {
@@ -961,6 +948,12 @@ int main(int argc, char ** argv) {
             is_interacting = true;
         }
     }
+
+    // print
+#ifdef IOCTL_OUTPUT
+    printf("%s", outputBuffer.c_str());
+#endif
+
 
     if (!path_session.empty() && params.prompt_cache_all && !params.prompt_cache_ro) {
         LOG_TEE("\n%s: saving final output to session file '%s'\n", __func__, path_session.c_str());
