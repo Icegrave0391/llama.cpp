@@ -749,27 +749,29 @@ int main(int argc, char ** argv) {
 
 #else
         // display based on buffer
-        std::string outputBuffer;
+        if (input_echo && display) {
+            std::string outputBuffer;
 
-        printf("Prep to display text\n");
+            printf("Prep to display text\n");
 
-        for (auto id : embd) {
-            const std::string token_str = llama_token_to_piece(ctx, id);
-            
-            if (embd.size() > 1) {
-                input_tokens.push_back(id);
-            } else {
-                output_tokens.push_back(id);
-                outputBuffer.append(token_str);
+            for (auto id : embd) {
+                const std::string token_str = llama_token_to_piece(ctx, id);
+                
+                if (embd.size() > 1) {
+                    input_tokens.push_back(id);
+                } else {
+                    output_tokens.push_back(id);
+                    outputBuffer.append(token_str);
+                }
             }
+
+            printf("%s", outputBuffer.c_str());
+            fflush(stdout);
+
+            char *bufferPtr = const_cast<char*>(outputBuffer.c_str());
+            printf("bufferPtr: %s\n", bufferPtr);
+            fflush(stdout);
         }
-
-        printf("%s", outputBuffer.c_str());
-        fflush(stdout);
-
-        char *bufferPtr = const_cast<char*>(outputBuffer.c_str());
-        printf("bufferPtr: %s\n", bufferPtr);
-        fflush(stdout);
 #endif
 
         // reset color to default if there is no pending user input
